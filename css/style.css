@@ -165,10 +165,10 @@ html {
     font-size: 2.5rem !important; }
   .depositModal__select-currency {
     grid-column: 1/2;
-    width: 70%; }
+     }
   .depositModal__select-plan {
     grid-column: 2/3;
-    width: 50%; }
+    }
   .depositModal__input-amount {
     grid-column: 1/3;
     justify-self: center; }
@@ -179,8 +179,8 @@ html {
   .depositModal__continue {
     grid-column: 2/3; }
   .depositModal__button {
-    padding: 1rem 1.5rem;
-    font-size: 1.6rem; }
+    padding: .7rem 1.2rem;
+    font-size: 1.3rem; }
 
 .heading-1 {
   color: #333a46;
