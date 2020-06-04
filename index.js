@@ -2,13 +2,26 @@
 const UICONTROLLER = (function(){
 
      domStrings = {
+         // Switch bewtween pages //
          template: document.querySelector(".template"),
          viewDetails : document.querySelectorAll(".viewDetails"),
+          // Switch bewtween pages //
+
+          // Making Deposit //
          headingDeposit: document.querySelector('.heading__deposit'),
 
          plus: document.querySelector('.plus'),
 
-         depositModal: document.querySelector('.depositModal')
+         depositChoosePage: document.querySelector('#depositChoosePage'),
+         depositConfirmPage: document.querySelector('#depositConfirmPage'),
+         alert: document.querySelector('.depositModal__alert'),
+         selectCurrency: document.querySelector('.selectCurrency'),
+         selectPlan: document.querySelector('.selectPlan'),
+         inputAmount: document.querySelector('#inputAmount'),
+         showAmount: document.querySelector('#showAmount'),
+         continueBtn: document.querySelector('#continueBtn'),
+         backBtn: document.querySelector('#backBtn')
+           // Making Deposit //
 
         
      }
@@ -16,6 +29,31 @@ const UICONTROLLER = (function(){
 
     return {
         domStrings: domStrings,
+
+        showAmountUI: (result) => {
+
+            if(!isNaN(result.amount) && result.amount < 1000000) {
+                domStrings.showAmount.textContent = `$${result.amount}`;
+                
+            }
+           
+
+            if(result.status == false) {
+            // 1 show alert message on ui;
+           domStrings.alert.innerHTML =  result.alert;
+           domStrings.continueBtn.style.display= 'none';
+            // 2 Making Button Unclickable //
+            
+       
+                    
+
+            } else {
+                // clearing error message
+                domStrings.alert.innerHTML = "";
+                domStrings.continueBtn.style.display= 'block';
+            }
+
+        },
 
         displayCollection: (collection, id, values) => {
 
@@ -80,10 +118,7 @@ const UICONTROLLER = (function(){
 
            </div>
 
-           <div class="bitcoin-area">
-           <div>
-               <div style="height:560px; background-color: #FFFFFF; overflow:hidden; box-sizing: border-box; border: 1px solid rgb(154,252, 207);  border-radius: 9px; text-align: right; line-height:14px; font-size: 12px; font-feature-settings: normal; text-size-adjust: 100%; box-shadow: inset 0 -20px 0 0 #56667F;padding:1px;padding: 0px; margin: 0px; width: 100%;"><div style="height:540px; padding:0px; margin:0px; width: 100%;"><iframe src="https://widget.coinlib.io/widget?type=chart&theme=light&coin_id=859&pref_coin_id=1505" width="100%" height="536px" scrolling="auto" marginwidth="0" marginheight="0" frameborder="0" border="0" style="border:0;margin:0;padding:0;line-height:14px;"></iframe></div><div style="color: #FFFFFF; line-height: 14px; font-weight: 400; font-size: 11px; box-sizing: border-box; padding: 2px 6px; width: 100%; font-family: Verdana, Tahoma, Arial, sans-serif;"><a href="https://coinlib.io" target="_blank" style="font-weight: 500; color: #FFFFFF; text-decoration:none; font-size:11px">Cryptocurrency Prices</a>&nbsp;by Coinlib</div></div>
-           </div>
+        
          
         `;
 
@@ -226,15 +261,146 @@ const DBCONTROLLER = (function(){
 
 }())
 
+//////////////////Deposit Controller //////////////////////////
+
+const DEPOSITCONTROLLER = (function(){
+ ////////////////////////////////////////DATA ////////////////////////////////////////////
+               // plan array //
+               const plans = [
+                   {
+                       name: 'bronze',
+                       min: 2000,
+                       max: 9999
+                       
+                   }, 
+                   {
+                       name: 'silver',
+                       min: 10000,
+                       max: 49999
+                   },
+
+                   {
+                       name: 'gold',
+                       min: 50000,
+                       max: 499999
+                   },
+
+                   {
+                       name: 'platinum',
+                       min: 500000,
+                       max: 1000000
+                   }
+               ];
+
+               // currency array//
+
+               const currencies =[
+
+                {
+                    name: 'bitcoin',
+                    address: "bitcoin4554ij4oi5h45h4oj5o4uh545"
+                },
+
+                {
+                    name: 'ethereum',
+                    address: "eheredfdfjaidpfa8ujfia pefae"
+                }, 
+
+                {
+                    name: 'xrp',
+                    address: "XRPdfjhaodfhapoiuhf oa fe"
+                }
 
 
 
-const controller = (function(UICTRL, DBCTRL){
+               ];
+////////////////////////////////////////end of DATA ////////////////////////////////////////////
+
+                 const data = {
+                     currencies: currencies,
+                     plans: plans
+                 };
+
+
+
+                const checkRequirements= (amount, plan, currency)=>{
+
+                        let status = "";
+                        let alert = "";
+                        let address= "";
+                            
+                            if(isNaN(amount) ) {
+                               
+                                    alert = `<div class="depositModal__alert depositModal__alert--failed">Please Insert a valid Amount </div>`;
+                                    status = false;
+                                   
+                               
+                            }
+                            else if(amount < plan.min || amount > plan.max){
+
+                                
+                                    alert = `<div class="depositModal__alert depositModal__alert--failed">Please Insert an Amount between $${plan.min} and $${plan.max} </div>`;
+                                    status = false;
+                                   
+                                
+                            } else {
+                               
+                                    status = true;
+                            }
+
+
+                          let selectedCurrency  =  data.currencies.findIndex(item => {
+                                return item.name == currency;
+                            });
+
+                            selectedCurrency = data.currencies[selectedCurrency];
+
+                            return {
+                                status: status,
+                                address: selectedCurrency.address,
+                                alert: alert,
+                                plan: plan,
+                                currency: selectedCurrency.name,
+                                amount: amount
+                            }
+
+
+                         }
+
+                return {
+
+                    validateAmount : (inputAmount, plan, currency)=> {
+
+                        //1 Get plan from array  
+                      selectedPlan = data.plans.findIndex(item => {
+                            return item.name === plan
+                        });
+                      selectedPlan = data.plans[selectedPlan];
+
+                      //2 Check if Amount Meets Requirements //
+
+                       return checkRequirements(inputAmount, selectedPlan, currency);
+                    
+
+                    }
+                }
+
+}())
+//////////////////end of Deposit Controller //////////////////////////
+
+
+
+const controller = (function(UICTRL, DBCTRL, DEPOSITCTRL){
        
     let state = {
         template: null,
         id: null,
-        collection: null
+        collection: null,
+        address: null,
+        amount: null,
+        currency:null,
+        plan: null,
+        depositTemplate: null
     }
 
 
@@ -250,7 +416,9 @@ const controller = (function(UICTRL, DBCTRL){
        }
  
 
- 
+    const warning = (let)=> {
+         console.log(`${let} me go to school`);
+    }
 
    
 
@@ -258,6 +426,7 @@ const controller = (function(UICTRL, DBCTRL){
 
     return {
 
+  
     init: function (event) {
     // 1 Put contents of template inside state to store //
     event.preventDefault();
@@ -279,20 +448,114 @@ const controller = (function(UICTRL, DBCTRL){
 
       
        /* Going Back */
-  
+
+       
 
     },
+  
 
     deposit: (event)=> {
-
+        
         UICTRL.domStrings.plus.classList.toggle('spin');
-        UICTRL.domStrings.depositModal.classList.toggle('u-display-block');
+        UICTRL.domStrings.depositChoosePage.classList.toggle('u-display-block');
+        UICTRL.domStrings.depositConfirmPage.classList.remove('u-display-block');
+       
+       // state.depositTemplate = UICTRL.domStrings.depositModal.innerHTML;
 
+
+       //* On inputing amount in the amounts tab
+
+       document.addEventListener('keyup', event => {
+            if(event.target.id == 'inputAmount') {
+
+
+              
+
+                    state.amount = event.target.value;
+                    
+                 function everything (inputAmount) {
+        
+                     //1 Get inputed Amount /
+        
+                    
+        
+                     // 2 Validate Amount 
+                      let plan =  UICTRL.domStrings.selectPlan.options[UICTRL.domStrings.selectPlan.options.selectedIndex].value.toLowerCase();
+                      let currency =  UICTRL.domStrings.selectCurrency.options[UICTRL.domStrings.selectCurrency.options.selectedIndex].value.toLowerCase();
+                      
+                       let result  = DEPOSITCTRL.validateAmount(inputAmount, plan, currency );
+             
+                     //3 saving information into state
+                         state.address = result.address;
+                         state.plan = result.plan;
+                        state.amount = inputAmount;
+                         state.currency = result.currency;
+             
+                       // 4 Show Amount and Validation message in UI
+                         UICTRL.showAmountUI(result);
+                       
+        
+                         /* On clicking Continue */
+                         UICTRL.domStrings.continueBtn.addEventListener('click', function(event){
+                             event.preventDefault();
+                             UICTRL.domStrings.depositChoosePage.classList.remove('u-display-block');
+                             UICTRL.domStrings.depositConfirmPage.classList.add('u-display-block');
+                             document.querySelector('.depositModal__finalAmount').textContent = `$${state.amount}`;
+                             document.querySelector('.depositModal__finalAddress').textContent = `$${state.address}`;
+                             /*endOf On clicking Continue */
+        
+                             document.addEventListener('click', e => {
+        
+                              /* on Click back button */ 
+                                 if(e.target.id === "backBtn") {
+                                     console.log('back');
+                                    UICTRL.domStrings.depositChoosePage.classList.add('u-display-block');
+                                    UICTRL.domStrings.depositConfirmPage.classList.remove('u-display-block');
+                                 }
+
+                                 /* on Click back button */ 
+                             })
+        
+                        
+                 
+                             
+                         })
+                 }
+        
+                    everything(state.amount)
+        
+                    document.addEventListener('change', (event)=> {
+                        if(event.target.id== "selectPlan") {
+                           everything(state.amount);
+                        }
+                    })
+        
+                    document.addEventListener('change', (event)=> {
+                        if(event.target.id== "selectCurrency") {
+                           everything(state.amount);
+                        }
+                    })
+        
+        
+                   
+        
+                 
+        
+        
+                
+
+
+            }
+
+       })
+       
     }
+
+    
 
 }
 
-}(UICONTROLLER, DBCONTROLLER))
+}(UICONTROLLER, DBCONTROLLER, DEPOSITCONTROLLER))
 
 
 
@@ -305,6 +568,7 @@ document.querySelectorAll('.viewDetails').forEach(item =>{
 
 
    
+// Making Deposit
 
 
 document.querySelector('.heading__deposit').addEventListener('click', controller.deposit)
